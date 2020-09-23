@@ -68,6 +68,17 @@ process.on(`exit`, code => {
   let verdaccioProc
   let verdaccioPromise
 
+  // Setting a list of packages with lerna --force-publish works 100%, without it randomly fails.
+  const workspaces = JSON.parse(
+    JSON.parse(
+      spawnSync(`yarn`, [`workspaces`, `info`, `--json`], {
+        shell: true,
+      }).stdout.toString()
+    ).data
+  )
+
+  const packages = Object.keys(workspaces)
+
   try {
     const verdaccio = promiseSpawn(`verdaccio --config config.yml`, {
       shell: true,
@@ -104,7 +115,9 @@ process.on(`exit`, code => {
 
     if (cmd === `publish` && !exitCode) {
       const { proc: lernaProc, promise: lernaPromise } = promiseSpawn(
-        `yarn lerna publish --registry ${REGISTRY_URL} --canary --preid ${preid} --dist-tag ${preid} --force-publish --ignore-scripts --yes`,
+        `yarn lerna publish --registry ${REGISTRY_URL} --canary --preid ${preid} --dist-tag ${preid} --force-publish=${packages.join(
+          `,`
+        )} --ignore-scripts --yes`,
         {
           shell: true,
         }
