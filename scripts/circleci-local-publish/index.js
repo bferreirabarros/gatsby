@@ -77,7 +77,9 @@ process.on(`exit`, code => {
     ).data
   )
 
-  const packages = Object.keys(workspaces)
+  const packages = Object.keys(workspaces).filter(pkg =>
+    [`gatsby-source-lever`, `gatsby-admin`].includes(pkg)
+  )
 
   try {
     const verdaccio = promiseSpawn(`verdaccio --config config.yml`, {
